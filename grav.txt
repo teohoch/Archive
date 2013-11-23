@@ -6,24 +6,25 @@ set u to 1.
 lock k to 0.
 lock a to altitude.
 lock throttle to u.
-
+set terminate to 0.
 lock steering to up + R(0,k,180).
-
-until a > 99999
+until terminate = 1
 {
 	if a > 5000
 	{
 		lock k to (-90*(((a-i)/(f-i))^j)).	//Orientacion lista!
 		if APOAPSIS < f
 		{
-			set u to 1.
+			set u to 1.			
 		}.
 		if APOAPSIS > f
 		{
 			set u to 0.
-		}.
-		
-		//Agregar control de propulcion, cortar al llegar a apoapsis requerido, y posiblemente reducir a velocidad terminal.
+			if altitude > 70000
+			{
+				set terminate to 1.
+			}.
+		}.//Agregar control de propulcion, cortar al llegar a apoapsis requerido, y posiblemente reducir a velocidad terminal.
 	}.
 }.
 print "Apoapsis es igual a: " + APOAPSIS.

@@ -1,18 +1,28 @@
 //circularization
-set a to 100000.
+lock throttle to u.
+declare parameter a. // Orbit
 set t to (time:seconds + ETA:APOAPSIS).
 set x to node(t,0,0,0).
 add x.
-
 lock m to ((x:periapsis + x:apoapsis)/2).
-
 print "apoapsis = " + x:APOAPSIS.
 print "periapsis = " + x:APOAPSIS.
 print m.
-
 until m >= a
 {
 	set x:prograde to (x:prograde + 5).
-}
-
+}.
+lock steering to x.
 //tenemos el nodo! :D!
+set delta to (((x:prograde)^2 + (x:RADIALOUT)^2 + (x:NORMAL)^2)^0.5).
+set acceleration to (maxthrust/mass).
+set burnTime to (delta/acceleration).
+set tTime to (burnTime/2).
+
+print burnTime.
+print tTime.
+WAIT UNTIL ETA:APOAPSIS < tTime.
+
+set u to 1.
+wait burnTime.
+set u to 0.
