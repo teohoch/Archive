@@ -1,0 +1,179 @@
+clearscreen.
+Set ln to 0.
+Set lt to 0.
+set flag1 to 0.
+set t to 1.
+Print "EXECUTING PROGRAM...".
+Print "Rover Landing by check.".
+Print "".
+
+//Launch program
+
+lock steering to up + R(0,0,180).
+lock throttle to 1.
+Print missiontime + " Launching...".
+Stage.
+
+// Rolls rocket 90 degrees... for fun. Useful in some situations
+
+Wait until alt:radar > 200.
+Lock steering to up + R(0,0,270).
+Print missiontime + " ROLL Prog.".
+
+//While in flight, auto throttles based on current velocity vs ideal velocity. If current vertical speed
+// > ideal velocity, throttle down, else throttle up.
+// When boosters are drained, ditched them.
+
+
+Until altitude > 8000 {
+if verticalspeed > 102.9 * (1.0001005^altitude) {
+set t to t - 0.05.}.
+if verticalspeed < 102.9 * (1.0001005^altitude) {
+set t to t + 0.05.}.
+
+//So when the rocket has < 450 fuel, it means the boosters are dry, so stage. BUT you only want to stage once,
+// so that's where the flag comes in. after you staged once, change the flag value so you don't stage again.
+
+If stage:liquidfuel < 450 AND flag1 = 0 {
+stage.
+set t to 1.
+set flag1 to 1.
+Print missiontime + " Booster Separation.".
+}.
+If t < 0 {set t to 0.}.
+If t > 1 {set t to 1.}.
+Lock throttle to t.
+}.
+Lock throttle to 1.
+
+// Gravity turn
+
+Lock steering to up + R(-45,1,180).
+Print missiontime + " Gravity turn.".
+Wait until stage:liquidfuel = 0.
+Stage.
+Lock throttle to 0.
+// Ditch the booster when it's dry.
+
+Print missiontime + " Stage 1 Sep.".
+
+// Coast past apoapsis and reorient retrograde the craft when it's below 7500 m.
+
+
+Wait until verticalspeed < 0 AND altitude < 75000.
+Lock steering to retrograde +R(0,0,180).
+
+// deploy the chute at 8000m and unlock the steering
+
+Wait until altitude <8000.
+Stage.
+Print missiontime+ " Drogue Deployed".
+Unlock steering.
+
+// jettison the heatsheild at 2200m
+Wait until alt:radar < 2200 and alt:radar > -1.
+Stage.
+Print missiontime + " HEATSHEILD Sep.".
+Wait until alt:radar < 1000.
+stage.
+// detach from chute/backshell at 1000m
+
+Print missiontime + " BACKSHELL Sep.".
+Wait 1.
+// deviate by 10 degrees (yaw / roll?) + 45 degrees pitch and fire engines. Numbers kind of arbitrary. mostly wanted
+// to test the horizontal velocity killing technique.
+// This is to move away from the parachute/backshell and not have it land on us later.
+
+Lock steering to up + R(10,45,180).
+Wait 1.
+Lock throttle to 0.3.
+Stage.
+Print missiontime + " Deviation mnvr.".
+wait 2.
+
+// Measures horizontal 'velocity' direction (not magnitude) and pitches/rolls the craft to compensate.
+// If longitude/latitude is increasing/decreasing, roll to fire engine in the opposite direction.
+// orient UP when surface velocity is < 1m/s. 
+
+Until surfacespeed < 1 OR alt:radar < 510{
+
+Set long1 to longitude.
+Set long2 to longitude.
+Set lat1 to latitude.
+Set lat2 to latitude.
+If long2 < long1 {set ln to -15.}.
+If long2 > long1 {set ln to 15.}.
+
+If lat2 < lat1 {set lt to -15.}.
+If lat2 > lat1 {set lt to 15.}.
+
+if abs(lat2-lat1) < 0.000005 {set lt to 0.}.
+if abs(long2-long1) < 0.000005 {set ln to 0.}.
+Lock steering to up + R(lt,ln,180).
+}.
+
+Set ln to 0.
+Set lt to 0.
+
+Lock throttle to 0.
+lock steering to up + R(0,0,180).
+
+
+// After 500 m, fire the throttle at 1.8 Gs.
+Wait until alt:radar < 500.
+Print missiontime + " Approach.". 
+Lock throttle to (1.8 * 9.81 * mass/maxthrust).
+
+// wait until veritcal speed >-30.... self explainitory.
+Wait until verticalspeed >-30.
+
+// Adjust throttle to either 1.7Gs or 1.0 Gs depending on if vertical speed is <-15 m/s or >-10 m/s until 120 m
+
+Until alt:radar < 120 {
+If verticalspeed <-15 {Lock throttle to (1.7 * 9.81 * mass/maxthrust).}.
+If verticalspeed >-10 {Lock throttle to (9.81 * mass/maxthrust).}.
+}.
+
+// Adjust throttle to either 1.4Gs or 1.1 Gs depending on if vertical speed is <-3 m/s or >-1 m/s until 2.5 m
+// Adjust pitch/roll based on horizontal velocity direction, like in deviation mod but with finer adjustments
+
+
+Print missiontime + " Final approach.". 
+Until alt:radar < 2.5 {
+
+Set long1 to longitude.
+Set long2 to longitude.
+Set lat1 to latitude.
+Set lat2 to latitude.
+If long2 < long1 {set ln to -2.}.
+If long2 > long1 {set ln to 2.}.
+
+If lat2 < lat1 {set lt to -2.}.
+If lat2 > lat1 {set lt to 2.}.
+
+if abs(lat2-lat1) < 0.000005 {set lt to 0.}.
+if abs(long2-long1) < 0.000005 {set ln to 0.}.
+
+Lock steering to up + R(lt,ln,180).
+
+If verticalspeed <-3 {Lock throttle to (1.4 * 9.81 * mass/maxthrust).}.
+If verticalspeed >-1 {Lock throttle to (1.1* 9.81 * mass/maxthrust).}.
+}.
+
+// At 2.5 m, pitch over 5 degrees, lock throttle to 2Gs, put the brakes on the rover wheels, jettison the skycrane.
+
+
+Lock steering to up+R(-5,0,180).
+
+Lock throttle to (2 * 9.81 * mass/maxthrust).
+Brakes on.
+Stage.
+Lock throttle to 0.
+Unlock throttle.
+Unlock steering.
+Wait 5.
+
+// After 5 seconds, open the com dish and extend the antennae.
+
+Toggle AG1.
+Print missiontime +" Landed.".

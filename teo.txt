@@ -1,0 +1,10 @@
+//r<heading, pitch, roll><180,35,90> es hacia el este, 0 pitch y 0 roll
+set p to 35.
+set h to 180.
+set r to 90.
+lock o to up + R(0,-90,-90).
+Set d to R(0,45,0).
+until 1>2
+{
+	lock steering to o+d.
+}

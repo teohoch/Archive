@@ -1,0 +1,18 @@
+//circularization
+set a to 100000.
+set t to (time:seconds + ETA:APOAPSIS).
+set x to node(t,0,0,0).
+add x.
+
+lock m to ((x:periapsis + x:apoapsis)/2).
+
+print "apoapsis = " + x:APOAPSIS.
+print "periapsis = " + x:APOAPSIS.
+print m.
+
+until m >= a
+{
+	set x:prograde to (x:prograde + 5).
+}
+
+//tenemos el nodo! :D!
