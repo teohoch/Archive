@@ -1,0 +1,12 @@
+declare parameter a. // Orbit
+set t to (time:seconds + ETA:PERIAPSIS).
+set x to node(t,0,0,0).
+add x.
+lock m to (((x:periapsis + x:apoapsis)/2)+600000).
+print "apoapsis = " + x:APOAPSIS.
+print "periapsis = " + x:PERIAPSIS.
+print m.
+until m >= a
+{
+	set x:prograde to (x:prograde + 5).
+}.

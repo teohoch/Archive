@@ -15,7 +15,7 @@ until m >= a
 lock steering to x.
 //tenemos el nodo! :D!
 set delta to (((x:prograde)^2 + (x:RADIALOUT)^2 + (x:NORMAL)^2)^0.5).
-set acceleration to (maxthrust/mass).
+set acceleration to (maxthrust/mass). //=> la aceleracion varia
 set burnTime to (delta/acceleration).
 set tTime to (burnTime/2).
 
